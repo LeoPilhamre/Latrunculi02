@@ -4,9 +4,6 @@ import Essentials.Binary;
 import Essentials.Constants;
 import Essentials.Global;
 import Essentials.Moves;
-import Essentials.Settings;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,16 +19,8 @@ public class Validator {
     {
         Validator.index = index;
         
-        int x = index % Settings.cellCount;
-        int y = Math.floorDiv(index, Settings.cellCount);
-        
         long validMoves;
         validMoves = Constants.zero;
-        
-        List<Long> moveBitboards = new ArrayList<Long>();
-        long moveBitboard;
-        
-        long attackBitboard;
         
         int dir = 1;
         String color = "W";
@@ -42,136 +31,30 @@ public class Validator {
         }
         
         String pieceChar = piece.substring(1);
-        switch(pieceChar)
+        switch (pieceChar)
         {
             case "P":
-                //https://www.chessprogramming.org/Pawn_Attacks_(Bitboards)#PawnAttacks
-                
-                // Attack.
-                long attackBitboardTR = getAttackBitboard(color, 7 * dir);
-                attackBitboardTR = Binary.NOT(attackBitboardTR, (dir == 1) ? Constants.aFile : Constants.hFile);
-                
-                long attackBitboardTL = getAttackBitboard(color, 9 * dir);
-                attackBitboardTL = Binary.NOT(attackBitboardTL, (dir == 1) ? Constants.hFile : Constants.aFile);
-                
-                attackBitboard = Binary.mergeBitboards(attackBitboardTR, attackBitboardTL);
-                
-                long standaloneBit = Binary.getStandaloneBit(index);
-                // Move.
-                moveBitboard = getMoveBitboard(standaloneBit, 8 * dir);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = Binary.mergeBitboards(moveBitboards);
-                
-                // Double Move.
-                long initialBitboard = (dir == 1) ? Constants.WP : Constants.BP;
-                initialBitboard = Binary.AND(standaloneBit, initialBitboard);
-                
-                long doubleMove = Constants.zero;
-                if (!isColliding(8 * dir))
-                    doubleMove = getMoveBitboard(initialBitboard, 16 * dir);
-                
-                //TODO: En Passant
-                
-                // Apply to valid moves.
-                validMoves = Binary.mergeBitboards(validMoves, attackBitboard, moveBitboard, doubleMove);
+                validMoves = Moves.getPawnMoves(color, dir, index);
                 
                 break;
             case "R":
-                validMoves = Moves.straight(x, y, color);
+                validMoves = Moves.getRockMoves(color, index);
                 
                 break;
             case "N":
-                // Move.
-                moveBitboard = getAllBitboard(color, -17);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.aFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, -10);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.aFile);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.bFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, 6);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.aFile);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.bFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, 15);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.aFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, -15);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, -6);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.gFile);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, 10);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.gFile);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, 17);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = Binary.mergeBitboards(moveBitboards);
-                
-                // Apply to valid moves.
-                validMoves = Binary.mergeBitboards(validMoves, moveBitboard);
+                validMoves = Moves.getKnightMoves(color);
 
                 break;
             case "B":
-                validMoves = Moves.diagonal(x, y, color);
+                validMoves = Moves.getBishopMoves(color, index);
                 
                 break;
             case "K":
-                // Move.
-                moveBitboard = getAllBitboard(color, 1);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, 9);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, 8);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, 7);
-                moveBitboard = Binary.NOT(moveBitboard, + Constants.aFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, -1);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.aFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, -9);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.aFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, -8);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = getAllBitboard(color, -7);
-                moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
-                moveBitboards.add(moveBitboard);
-                
-                moveBitboard = Binary.mergeBitboards(moveBitboards);
-                
-                // Apply to valid moves.
-                validMoves = Binary.mergeBitboards(validMoves, moveBitboard);
+                validMoves = Moves.getKingMoves(color);
                 
                 break;
             case "Q":
-                long diagonal = Moves.diagonal(x, y, color);
-                long straight = Moves.straight(x, y, color);
-                
-                validMoves = Binary.mergeBitboards(diagonal, straight);
+                validMoves = Moves.getQueenMoves(color, index);
                 
                 break;
         }
@@ -196,6 +79,8 @@ public class Validator {
                 continue;
             
             bitboard = bitboards.get(piece);
+            
+            
         }
         
         
