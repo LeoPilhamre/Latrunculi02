@@ -1,9 +1,6 @@
 package Essentials;
 
 import Systems.Validator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -13,18 +10,19 @@ public class Moves extends Validator {
     
     public static long diagonal(int x, int y, String color)
     {
-        long moveBitboard = Constants.zero;
+        long bitboard = Constants.zero;
         
         int rowIndex;
-                
+        
         // NW
         rowIndex = 1;
         while (x - rowIndex >= 0)
         {
-            if (isColliding(color, 8 * rowIndex + rowIndex))
-                break;
+            bitboard = Binary.OR(bitboard, getAllBitboard(color, 8 * rowIndex + rowIndex));
 
-            moveBitboard = Binary.OR(moveBitboard, getAllBitboard(color, 8 * rowIndex + rowIndex));
+            if (isColliding(8 * rowIndex + rowIndex))
+                break;
+            
             rowIndex++;
         }
 
@@ -32,10 +30,11 @@ public class Moves extends Validator {
         rowIndex = 1;
         while (x + rowIndex + 1 <= 8)
         {
-            if (isColliding(color, 8 * rowIndex - rowIndex))
-                break;
+            bitboard = Binary.OR(bitboard, getAllBitboard(color, 8 * rowIndex - rowIndex));
 
-            moveBitboard = Binary.OR(moveBitboard, getAllBitboard(color, 8 * rowIndex - rowIndex));
+            if (isColliding(8 * rowIndex - rowIndex))
+                break;
+            
             rowIndex++;
         }
 
@@ -43,10 +42,11 @@ public class Moves extends Validator {
         rowIndex = 1;
         while (x - rowIndex >= 0)
         {
-            if (isColliding(color, -8 * rowIndex + rowIndex))
-                break;
+            bitboard = Binary.OR(bitboard, getAllBitboard(color, -8 * rowIndex + rowIndex));
 
-            moveBitboard = Binary.OR(moveBitboard, getAllBitboard(color, -8 * rowIndex + rowIndex));
+            if (isColliding(-8 * rowIndex + rowIndex))
+                break;
+            
             rowIndex++;
         }
 
@@ -54,17 +54,15 @@ public class Moves extends Validator {
         rowIndex = 1;
         while (x + rowIndex + 1 <= 8)
         {
-            if (isColliding(color, -8 * rowIndex - rowIndex))
-                break;
+            bitboard = Binary.OR(bitboard, getAllBitboard(color, -8 * rowIndex - rowIndex));
 
-            moveBitboard = Binary.OR(moveBitboard, getAllBitboard(color, -8 * rowIndex - rowIndex));
+            if (isColliding(-8 * rowIndex - rowIndex))
+                break;
+            
             rowIndex++;
         }
-
-        // Apply to valid moves.
-        long validMoves = mergeBitboards(moveBitboard);
         
-        return validMoves;
+        return bitboard;
     }
     
     public static long straight(int x, int y, String color)
@@ -78,41 +76,38 @@ public class Moves extends Validator {
         // Left.
         for (int i = 0; i < x; i++)
         {
-            if (isColliding(color, i + 1))
-                break;
-
             bitboard = Binary.OR(bitboard, getAllBitboard(color, i + 1));
+
+            if (isColliding(i + 1))
+                break;
         }
         // Right.
         for (int i = 0; i < negX; i++)
         {
-            if (isColliding(color, (-(i + 1))))
-                break;
-
             bitboard = Binary.OR(bitboard, getAllBitboard(color, (-(i + 1))));
+
+            if (isColliding(-(i + 1)))
+                break;
         }
 
         // Up.
         for (int i = 0; i < y; i++)
         {
-            if (isColliding(color, (i + 1) * 8))
-                break;
-
             bitboard = Binary.OR(bitboard, getAllBitboard(color, (i + 1) * 8));
+
+            if (isColliding((i + 1) * 8))
+                break;
         }
         // Down.
         for (int i = 0; i < negY; i++)
         {
-            if (isColliding(color, (-(i + 1)) * 8))
-                break;
-
             bitboard = Binary.OR(bitboard, getAllBitboard(color, (-(i + 1)) * 8));
-        }
 
-        // Apply to valid moves.
-        long validMoves = bitboard;
+            if (isColliding((-(i + 1)) * 8))
+                break;
+        }
         
-        return validMoves;
+        return bitboard;
     }
     
 }

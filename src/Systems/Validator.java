@@ -54,27 +54,27 @@ public class Validator {
                 long attackBitboardTL = getAttackBitboard(color, 9 * dir);
                 attackBitboardTL = Binary.NOT(attackBitboardTL, (dir == 1) ? Constants.hFile : Constants.aFile);
                 
-                attackBitboard = mergeBitboards(attackBitboardTR, attackBitboardTL);
+                attackBitboard = Binary.mergeBitboards(attackBitboardTR, attackBitboardTL);
                 
                 long standaloneBit = Binary.getStandaloneBit(index);
                 // Move.
                 moveBitboard = getMoveBitboard(standaloneBit, 8 * dir);
                 moveBitboards.add(moveBitboard);
                 
-                moveBitboard = mergeBitboards(moveBitboards);
+                moveBitboard = Binary.mergeBitboards(moveBitboards);
                 
                 // Double Move.
                 long initialBitboard = (dir == 1) ? Constants.WP : Constants.BP;
                 initialBitboard = Binary.AND(standaloneBit, initialBitboard);
                 
                 long doubleMove = Constants.zero;
-                if (!isColliding(color, 8 * dir))
+                if (!isColliding(8 * dir))
                     doubleMove = getMoveBitboard(initialBitboard, 16 * dir);
                 
                 //TODO: En Passant
                 
                 // Apply to valid moves.
-                validMoves = mergeBitboards(validMoves, attackBitboard, moveBitboard, doubleMove);
+                validMoves = Binary.mergeBitboards(validMoves, attackBitboard, moveBitboard, doubleMove);
                 
                 break;
             case "R":
@@ -119,10 +119,10 @@ public class Validator {
                 moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
                 moveBitboards.add(moveBitboard);
                 
-                moveBitboard = mergeBitboards(moveBitboards);
+                moveBitboard = Binary.mergeBitboards(moveBitboards);
                 
                 // Apply to valid moves.
-                validMoves = mergeBitboards(validMoves, moveBitboard);
+                validMoves = Binary.mergeBitboards(validMoves, moveBitboard);
 
                 break;
             case "B":
@@ -161,17 +161,17 @@ public class Validator {
                 moveBitboard = Binary.NOT(moveBitboard, Constants.hFile);
                 moveBitboards.add(moveBitboard);
                 
-                moveBitboard = mergeBitboards(moveBitboards);
+                moveBitboard = Binary.mergeBitboards(moveBitboards);
                 
                 // Apply to valid moves.
-                validMoves = mergeBitboards(validMoves, moveBitboard);
+                validMoves = Binary.mergeBitboards(validMoves, moveBitboard);
                 
                 break;
             case "Q":
                 long diagonal = Moves.diagonal(x, y, color);
                 long straight = Moves.straight(x, y, color);
                 
-                validMoves = mergeBitboards(diagonal, straight);
+                validMoves = Binary.mergeBitboards(diagonal, straight);
                 
                 break;
         }
@@ -179,29 +179,29 @@ public class Validator {
         return validMoves;
     }
     
-    public static long mergeBitboards(long... bitboards)
+    public static boolean isInCheck(String color)
     {
-        long mergedBitboard = Constants.zero;
+        int dir = (color == "W") ? 1 : -1;
         
-        for (long bitboard : bitboards)
+        Map<String, Long> bitboards = Global.board.getBoard();
+        
+        long kingBitboard = bitboards.get(color + "K");
+        
+        String piece;
+        long bitboard;
+        for (String key : bitboards.keySet())
         {
-            mergedBitboard = Binary.OR(mergedBitboard, bitboard);
+            piece = key;
+            if (piece.startsWith(color))
+                continue;
+            
+            bitboard = bitboards.get(piece);
         }
         
-        return mergedBitboard;
+        
+        return false;
     }
     
-    public static long mergeBitboards(List<Long> bitboards)
-    {
-        long mergedBitboard = Constants.zero;
-        
-        for (long bitboard : bitboards)
-        {
-            mergedBitboard = Binary.OR(mergedBitboard, bitboard);
-        }
-        
-        return mergedBitboard;
-    }
     
     public static long getAttackBitboard(String color, int offset)
     {
@@ -273,7 +273,7 @@ public class Validator {
         return validBitboard;
     }
     
-    public static boolean isColliding(String color, int offset)
+    public static boolean isColliding(int offset)
     {
         Map<String, Long> bitboards = Global.board.getBoard();
         
@@ -288,8 +288,6 @@ public class Validator {
         for (String key : bitboards.keySet())
         {
             piece = key;
-            if (!piece.startsWith(color))
-                continue;
             
             bits = bitboards.get(piece);
             

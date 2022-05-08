@@ -1,5 +1,7 @@
 package Essentials;
 
+import java.util.List;
+
 /**
  *
  * @author Leo Pilhamre
@@ -53,6 +55,30 @@ public class Binary {
     public static long COMPLEMENT(long b1)
     {
         return ~b1;
+    }
+    
+    public static long mergeBitboards(long... bitboards)
+    {
+        long mergedBitboard = Constants.zero;
+        
+        for (long bitboard : bitboards)
+        {
+            mergedBitboard = Binary.OR(mergedBitboard, bitboard);
+        }
+        
+        return mergedBitboard;
+    }
+    
+    public static long mergeBitboards(List<Long> bitboards)
+    {
+        long mergedBitboard = Constants.zero;
+        
+        for (long bitboard : bitboards)
+        {
+            mergedBitboard = Binary.OR(mergedBitboard, bitboard);
+        }
+        
+        return mergedBitboard;
     }
     
 }
